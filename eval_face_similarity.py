@@ -50,8 +50,8 @@ if __name__ == "__main__":
             print("-" * 50)
             print(f"Оригинал:  {os.path.basename(original)}")
             print(f"Генерация: {os.path.basename(generated)}")
-            print(f"✅ Косинусное расстояние: {round(distance, 4)}")
-            print(f"✅ Сохранение идентичности: {sim_score}%")
+            print(f"Косинусное расстояние: {round(distance, 4)}")
+            print(f"Сохранение идентичности: {sim_score}%")
             if sim_score > 60: 
                 print("Идентичность успешно сохранена (порог > 60%).")
             else:
