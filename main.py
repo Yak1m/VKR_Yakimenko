@@ -13,20 +13,11 @@ import json
 import streamlit as st
 
 # --- КОНФИГУРАЦИЯ ---
-PROJECT_ID = "glassy-bonsai-479912-q1"  # Мой ID проекта Google Cloud
+PROJECT_ID = "" # ID проекта Google Cloud
 LOCATION = "us-central1"        
 MODEL_NAME = "gemini-2.5-flash-image"
 TEXT_MODEL_NAME = "gemini-2.5-flash"
-API_KEY = "AQ.Ab8RN6K9T3FehzqElm8_a2NaZgj7IlmZ2738brnZw-tpFdPV8g"
-BRAND_COLORS = {
-    "gold": "#D2923A",
-    "text_main": "#333333"
-}
-
-test = False
-
-user_name = "Иван Иванов"
-body_text = "Ведущий эксперт по кибербезопасности с 10-летним опытом. Специализируется на защите критической инфраструктуры и предотвращении кибератак. Автор множества публикаций и докладов на международных конференциях."
+API_KEY = "" # API ключ
 
 # Инициализируем хранилище
 if 'history' not in st.session_state:
@@ -185,7 +176,7 @@ def get_person_segmentation_limits(image_input):
 
 # --- ГЛАВНАЯ ФУНКЦИЯ ГЕНЕРАЦИИ ---
 
-def generate_card_gemini(person_input, custom_bg=None, custom_clothes=None, edit_prompt=None, test=False):
+def generate_card_gemini(person_input, custom_bg=None, custom_clothes=None, edit_prompt=None):
     client = genai.Client(vertexai=True, project=PROJECT_ID, location=LOCATION)
     
     if hasattr(person_input, 'convert'):
@@ -193,17 +184,6 @@ def generate_card_gemini(person_input, custom_bg=None, custom_clothes=None, edit
     else:
         person_img = Image.open(person_input).convert("RGB")
     person_bytes = pil_to_bytes(person_img)
-    
-    if test:
-        print("⚠️ Режим тестирования: Gemini не будет вызван, используется заглушка.")
-        # Заглушка: просто копируем входное изображение в выходное
-        # visual_context = analyze_photo_context(client, person_bytes)
-        if hasattr(person_input, 'convert'):
-            person_img = person_input.convert("RGB")
-        else:
-            person_img = Image.open(person_input).convert("RGB")
-        # add_text(img, user_name, body_text, output_path)
-        return person_img
 
     # Подготовка контента 
     image_part = types.Part.from_bytes(
@@ -366,11 +346,11 @@ def draw_contour_text(img, text, font, mask, start_y, padding=40, right_margin=5
         # Формируем строку
         line_content = ""
         while current_word_idx < len(words):
-            test_line = line_content + (" " if line_content else "") + words[current_word_idx]
-            test_w = draw_img.textlength(test_line, font=font)
+            text_line = line_content + (" " if line_content else "") + words[current_word_idx]
+            text_w = draw_img.textlength(text_line, font=font)
             
-            if test_w <= available_w:
-                line_content = test_line
+            if text_w <= available_w:
+                line_content = text_line
                 current_word_idx += 1
             else:
                 break
@@ -489,7 +469,7 @@ with col_settings:
                 bg_en = translate_to_english(custom_bg_ru, client) if custom_bg_ru else None
                 clothes_en = translate_to_english(custom_clothes_ru, client) if custom_clothes_ru else None
                 
-                gen_img = generate_card_gemini(source_img, custom_bg=bg_en, custom_clothes=clothes_en, test=test)
+                gen_img = generate_card_gemini(source_img, custom_bg=bg_en, custom_clothes=clothes_en)
                 
                 if gen_img:
                     mask_dict = get_person_segmentation_limits(gen_img)
@@ -518,7 +498,7 @@ with col_settings:
                     with st.spinner("Применяем изменения..."):
                         edit_prompt_en = translate_to_english(custom_edit_ru, client)
                         # Для правки отправляем ТЕКУЩУЮ картинку и ТЕКСТ правки
-                        gen_img = generate_card_gemini(current_state['img'], edit_prompt=edit_prompt_en, test=test)
+                        gen_img = generate_card_gemini(current_state['img'], edit_prompt=edit_prompt_en)
                         if gen_img:
                             mask_dict = get_person_segmentation_limits(gen_img)
                             st.session_state.history.append({'img': gen_img, 'mask': mask_dict})
